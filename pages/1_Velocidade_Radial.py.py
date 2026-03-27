@@ -16,7 +16,7 @@ def semi_amplitude_K(a, M_min, M_total, P, e):
 
 def velocidade_radial(m, a, e, T, M_t, f, w, i, t):
     M_min = m * np.sin(i * radianos)
-    K = semi_amplitude_K(a, M_min, M_t, T, e)
+    K = 30 # semi_amplitude_K(a, M_min, M_t, T, e)
     return K * (np.cos(2 * np.pi * t / T + (f + w) * radianos) + e * np.cos(w * radianos)) * conv_vel
 
 # CSS para controlar tamanho do gráfico
