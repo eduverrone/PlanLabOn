@@ -104,6 +104,15 @@ inc = st.sidebar.slider(
     help="Inclinação do plano orbital"
 )
 
+t_f = st.sidebar.slider(
+    "Tempo total [anos]",
+    min_value=1,
+    max_value=20,
+    value=3,
+    step=1,
+    help="Tempo total de simulação (em anos)"
+)
+
 # Parâmetros adicionais (opcionais - expandir)
 with st.sidebar.expander("Outros Parâmetros"):
     MC = st.number_input(
@@ -135,6 +144,7 @@ with st.sidebar.expander("Outros Parâmetros"):
     mu1 = 4.0*np.pi**2 * (MC + massa_planeta)
     semi_eixo = ((periodo**2 * mu1) / (4 * np.pi ** 2)) ** (1 / 3)
 
+t = np.linspace(0, t_f, t_f*100)
 # Calcular a curva de velocidade radial
 rv = velocidade_radial(massa_planeta, semi_eixo, ecc, periodo, MC, w_arg, inc, t)
 
