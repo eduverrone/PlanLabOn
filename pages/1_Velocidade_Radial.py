@@ -127,7 +127,7 @@ with st.sidebar.expander("Outros Parâmetros"):
     massa_planeta = st.number_input(
         "Massa mínima do Planeta [M_Jup]",
         min_value=0.1,
-        max_value=10.0,
+        max_value=20.0,
         value=1.0,
         step=0.1,
         help="Massa Mínima do planeta em massas de Júpiter"
@@ -136,7 +136,7 @@ with st.sidebar.expander("Outros Parâmetros"):
     periodo = st.number_input(
         "Período Orbital [anos]",
         min_value=0.1,
-        max_value=5.0,
+        max_value=20.0,
         value=1.0,
         step=0.1,
         help="Tempo para completar uma órbita"
