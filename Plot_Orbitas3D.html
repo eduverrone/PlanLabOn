@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Órbitas Planetárias 3D - Simulador Interativo</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+		
+		/* Janela de Informações Angulares */
+        #infoAngular {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            z-index: 100;
+            font-size: 13px;
+            min-width: 280px;
+            pointer-events: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            font-family: monospace;
+        }
+		
+		#infoAngular:hover {
+            background: rgba(0, 0, 0, 0.95);
+            border-color: rgba(255, 170, 68, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        #infoAngular h3 {
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            text-align: center;
+            color: #ffd700;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .info-label {
+            color: #aaa;
+            font-weight: normal;
+        }
+        
+        .info-value {
+            color: #ffaa44;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        
+        .info-value-blue {
+            color: #88aaff;
+        }
+        
+        .info-value-red {
+            color: #ff8888;
+        }
+        
+        .separator {
+            height: 1px;
+            background: rgba(255,255,255,0.2);
+            margin: 10px 0;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: #88aaff;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            z-index: 100;
+            font-size: 14px;
+            max-width: 320px;
+            max-height: 90vh;
+            overflow-y: auto;
+            pointer-events: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        #controls h2 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            text-align: center;
+            color: #ffd700;
+        }
+        
+        #controls h3 {
+            margin: 15px 0 10px 0;
+            font-size: 16px;
+            color: #aaa;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #ddd;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            background: #333;
+            height: 3px;
+            border-radius: 3px;
+        }
+        
+        .value-display {
+            display: inline-block;
+            background: #444;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+            font-family: monospace;
+        }
+        
+        .checkbox-group {
+            margin: 10px 0;
+        }
+        
+        .checkbox-group label {
+            display: inline-block;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+        
+        .info-text {
+            font-size: 12px;
+            color: #ffaa00;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+            text-align: center;
+        }
+        
+        .inc-mut-value {
+            font-size: 14px;
+            color: #ffaa00;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #222;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            #controls {
+                top: 10px;
+                right: 10px;
+                max-width: 280px;
+                padding: 15px;
+                max-height: 85vh;
+            }
+        }
+		
+		
+    </style>
+</head>
+<body>
+	<div id="infoAngular">
+        <h3>📐 Informações Angulares</h3>
+        
+        <div class="info-row">
+            <span class="info-label">Inclinação Mútua:</span>
+            <span class="info-value" id="incMutValueInfo">0.00°</span>
+        </div>
+        
+        <div class="subtitle">⬇️ Inclinação ao plano perpendicular a L_T</div>
+        
+        <div class="info-row">
+            <span class="info-label">🟦 Órbita 1 (Azul):</span>
+            <span class="info-value-blue" id="incRelativa1Info">0.00°</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">🟥 Órbita 2 (Vermelha):</span>
+            <span class="info-value-red" id="incRelativa2Info">0.00°</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Inclinação entre os planos:</span>
+            <span class="info-value" id="incPlanoTotalInfo">0.00°</span>
+        </div>
+        
+    </div>
+    
+    <!-- Menu de controles original -->
+    <div id="controls">
+        <h2>🎯 Controles</h2>
+        
+        <div class="checkbox-group">
+            <input type="checkbox" id="toggleEixos" checked>
+            <label for="toggleEixos"> Eixos</label>
+        </div>
+        
+        <div class="checkbox-group">
+            <input type="checkbox" id="togglePlano" checked>
+            <label for="togglePlano"> Plano do Céu (XY)</label>
+        </div>
+        
+        <div class="checkbox-group">
+            <input type="checkbox" id="toggleVetores" checked>
+            <label for="toggleVetores"> Vetores de Momento Angular</label>
+        </div>
+		
+		<div class="checkbox-group">
+            <input type="checkbox" id="toggleVetorTotal" checked>
+            <label for="toggleVetorTotal"> Vetor Momento Angular Total</label>
+        </div>
+        
+        <div class="checkbox-group">
+            <input type="checkbox" id="togglePlanoTotal" checked>
+            <label for="togglePlanoTotal"> Plano Perpendicular ao L_Total</label>
+        </div>
+		
+        <div class="control-group">
+            <label>⭐ Massa da Estrela (M☉): <span id="MCValue" class="value-display">1.0</span></label>
+            <input type="range" id="MCSlider" min="0.1" max="5.0" step="0.01" value="1.0">
+        </div>       
+        
+        <h3>🪐 Órbita 1 (Azul)</h3>
+		<div class="control-group">
+            <label>Massa do Objeto (M_Jupiter): <span id="M1Value" class="value-display">1.0</span></label>
+            <input type="range" id="M1Slider" min="0.1" max="15.0" step="0.1" value="1.0">
+            <div style="font-size: 11px; color: #888; margin-top: 4px;">1 M_Jupiter = 9.5464×10⁻⁴ M☉</div>
+        </div>
+        
+        <div class="control-group">
+            <label>Semi-eixo maior (a₁) [UA]: <span id="a1Value" class="value-display">1.0</span></label>
+            <input type="range" id="a1Slider" min="0.1" max="15" step="0.1" value="1.0">
+        </div>
+        
+        <div class="control-group">
+            <label>Excentricidade (e₁): <span id="e1Value" class="value-display">0.25</span></label>
+            <input type="range" id="e1Slider" min="0" max="0.99" step="0.01" value="0.25">
+        </div>
+		
+        <div class="control-group">
+            <label>Inclinação (i₁): <span id="inc1Value" class="value-display">90°</span></label>
+            <input type="range" id="inc1Slider" min="0" max="180" step="1" value="90">
+        </div>
+        
+        <div class="control-group">
+            <label>Arg. Periastro (ω₁): <span id="w1Value" class="value-display">0°</span></label>
+            <input type="range" id="w1Slider" min="0" max="360" step="1" value="0">
+        </div>
+        
+        <div class="control-group">
+            <label>Long. Nodo Asc. (Ω₁): <span id="Omega1Value" class="value-display">0°</span></label>
+            <input type="range" id="Omega1Slider" min="0" max="360" step="1" value="0">
+        </div>
+        
+        <h3>🪐 Órbita 2 (Vermelha)</h3>
+		<div class="control-group">
+            <label>Massa do Objeto (M_Jupiter): <span id="M2Value" class="value-display">2.0</span></label>
+            <input type="range" id="M2Slider" min="0.1" max="15.0" step="0.1" value="2.0">
+            <div style="font-size: 11px; color: #888; margin-top: 4px;">1 M_Jupiter = 9.5464×10⁻⁴ M☉</div>
+        </div>
+        
+        <div class="control-group">
+            <label>Semi-eixo maior (a₂) [UA]: <span id="a2Value" class="value-display">5.0</span></label>
+            <input type="range" id="a2Slider" min="0.1" max="20" step="0.1" value="5.0">
+        </div>
+        
+        <div class="control-group">
+            <label>Excentricidade (e₂): <span id="e2Value" class="value-display">0.30</span></label>
+            <input type="range" id="e2Slider" min="0" max="0.99" step="0.01" value="0.30">
+        </div>
+        <div class="control-group">
+            <label>Inclinação (i₂): <span id="inc2Value" class="value-display">90°</span></label>
+            <input type="range" id="inc2Slider" min="0" max="180" step="1" value="90">
+        </div>
+        
+        <div class="control-group">
+            <label>Arg. Periastro (ω₂): <span id="w2Value" class="value-display">0°</span></label>
+            <input type="range" id="w2Slider" min="0" max="360" step="1" value="0">
+        </div>
+        
+        <div class="control-group">
+            <label>Long. Nodo Asc. (Ω₂): <span id="Omega2Value" class="value-display">0°</span></label>
+            <input type="range" id="Omega2Slider" min="0" max="360" step="1" value="0">
+        </div>		
+        
+        <div class="info-text">
+            💡 Dica: Use o mouse para rotacionar a cena<br>
+            🖱️ Botão direito para zoom<br>
+        </div>
+    </div>
+
+    <!-- Import Three.js e extensões -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        // ==================== CONSTANTES ====================
+        const radianos = Math.PI / 180;
+		const const_grav = 4.0 * Math.PI * Math.PI ;
+        const angulos = Array.from({ length: 360 }, (_, i) => i * 2 * Math.PI / 360);
+        
+        // ==================== PARÂMETROS VARIÁVEIS ====================
+        // Parâmetros do sistema (serão atualizados pelos sliders)
+        let MC = 1.0;  // Massa da estrela central (M☉)
+        let M1 = 1.0; // Massa do objeto 1 (M_Jupiter)
+        let M2 = 2.0; // Massa do objeto 2 (M_Jupiter)
+        let a1 = 1.0;  // Semi-eixo maior 1 (UA)
+        let a2 = 5.0;  // Semi-eixo maior 2 (UA)
+        let e1 = 0.25;  // Excentricidade 1
+        let e2 = 0.30;  // Excentricidade 2
+        
+        const conv_massa = 9.5464E-4; // Converte Massa de Jupiter em Massa Solar
+        
+        // Função para calcular r(θ) da órbita elíptica
+        function eq_orbital(a, e, theta) {
+            return (5+a) * (1 - e * e) / (1 + e * Math.cos(theta));
+        }
+        
+		// Função para recalcular r(θ) com novos parâmetros
+        function recalcularR() {
+            const r1_novo = [];
+            const r2_novo = [];
+            for (let i = 0; i < angulos.length; i++) {
+                r1_novo.push(eq_orbital(a1, e1, angulos[i]));
+                r2_novo.push(eq_orbital(a2, e2, angulos[i]));
+            }
+            return { r1: r1_novo, r2: r2_novo };
+        }
+		
+        const r1 = angulos.map(theta => eq_orbital(a1, e1, theta));
+        const r2 = angulos.map(theta => eq_orbital(a2, e2, theta));
+        
+        // ==================== CONFIGURAÇÃO DA CENA ====================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+        scene.fog = new THREE.FogExp2(0x000000, 0.0005);
+        
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(30, 30, 40);
+        camera.lookAt(0, 0, 0);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+        
+        // CSS2D Renderer para textos
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.left = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(labelRenderer.domElement);
+        
+        // Controles de câmera
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = false;
+        controls.enableZoom = true;
+        controls.zoomSpeed = 1.2;
+        controls.rotateSpeed = 1.0;
+        
+        // ==================== LUZES ====================
+        // Luz ambiente
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        
+        // Luz principal (Sol)
+        const sunLight = new THREE.PointLight(0xffaa66, 2, 100);
+        sunLight.position.set(0, 0, 0);
+        sunLight.castShadow = true;
+        scene.add(sunLight);
+        
+        // Luz de preenchimento
+        const fillLight = new THREE.DirectionalLight(0x88aaff, 0.5);
+        fillLight.position.set(1, 2, 1);
+        scene.add(fillLight);
+        
+        // ==================== SOL ====================
+        const sunGeometry = new THREE.SphereGeometry(1.5, 64, 64);
+        const sunMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffaa44,
+            emissive: 0xff4422,
+            emissiveIntensity: 0.5,
+            metalness: 0.1,
+            roughness: 0.5
+        });
+        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        sun.castShadow = true;
+        scene.add(sun);
+        
+        // Glow do Sol (partículas)
+        const glowGeometry = new THREE.SphereGeometry(1.6, 32, 32);
+        const glowMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff8844,
+            transparent: true,
+            opacity: 0.2
+        });
+        const sunGlow = new THREE.Mesh(glowGeometry, glowMaterial);
+        scene.add(sunGlow);
+        
+        // ==================== PLANO DO CÉU (Plano XY) ====================
+        // Agora o plano está no plano XY (horizontal), com Z sendo a linha de visada
+        const planeGeometry = new THREE.PlaneGeometry(100, 100);
+        const planeMaterial = new THREE.MeshPhongMaterial({
+            color: 0x88aaff,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.5,
+            depthWrite: false
+        });
+        const plano = new THREE.Mesh(planeGeometry, planeMaterial);
+        // Não rotacionar - já está no plano XY por padrão (normal = Z)
+        plano.position.z = 0;
+        scene.add(plano);
+        
+        // Adicionar uma grade no plano XY para referência
+        //const gridHelper = new THREE.GridHelper(60, 20, 0x88aaff, 0x335588);
+        //gridHelper.position.z = -0.1; // Ligeiramente abaixo para não atrapalhar
+        //gridHelper.material.transparent = true;
+        //gridHelper.material.opacity = 0.3;
+        //scene.add(gridHelper);
+        
+        // ==================== EIXOS ====================
+        //const axesHelper = new THREE.AxesHelper(25);
+        //scene.add(axesHelper);
+	// ==================== EIXOS COM ARROWHELPER ====================
+        const comprimentoEixo = 30;
+        
+        // Eixo X
+        const eixoX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), comprimentoEixo,0x33ff33, 1.0, 0.5);
+        scene.add(eixoX);
+        
+        // Eixo Y
+        const eixoY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), comprimentoEixo,0x33ff33, 1.0, 0.5);
+        scene.add(eixoY);
+        
+        // Eixo Z
+        const eixoZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), comprimentoEixo,0x33ff33, 1.0, 0.5);
+        scene.add(eixoZ);
+        
+        const eixosPersonalizados = [eixoX, eixoY, eixoZ];
+        
+        // Rótulos dos eixos (CSS2D)
+        function createAxisLabel(text, color, position) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.style.color = color;
+            div.style.fontSize = '18px';
+            div.style.fontWeight = 'bold';
+            div.style.textShadow = '1px 1px 0px black';
+            div.style.background = 'rgba(0,0,0,0.5)';
+            div.style.padding = '2px 6px';
+            div.style.borderRadius = '4px';
+            const label = new CSS2DObject(div);
+            label.position.copy(position);
+            scene.add(label);
+            return label;
+        }
+        
+        const xLabel = createAxisLabel('X', '#44ff44', new THREE.Vector3(32, 0, 0));
+        const yLabel = createAxisLabel('Y', '#44ff44', new THREE.Vector3(0, 32, 0));
+        const zLabel = createAxisLabel('Z (Linha de Visada)', '#44ff44', new THREE.Vector3(0, 0, 32));
+        
+        // ==================== FUNÇÕES PARA GERAR ÓRBITAS ====================
+        function calcularPontosOrbita(r, Omega, w, inc) {
+            const pontos = [];
+            for (let i = 0; i < angulos.length; i++) {
+                const theta = angulos[i];
+                const OmegaRad = Omega * radianos;
+                const wRad = w * radianos;
+                const incRad = inc * radianos;
+                
+                // Fórmulas de transformação conforme seu código original
+                const x = r[i]*(Math.cos(OmegaRad) * Math.cos(theta + wRad) - 
+                                 Math.sin(OmegaRad) * Math.sin(theta + wRad) * Math.cos(incRad));
+                const y = r[i]*(Math.sin(OmegaRad) * Math.cos(theta + wRad) + 
+                                 Math.cos(OmegaRad) * Math.sin(theta + wRad) * Math.cos(incRad));
+                const z = r[i]*(Math.sin(theta + wRad) * Math.sin(incRad));
+                
+                pontos.push(new THREE.Vector3(x, y, z));
+            }
+            return pontos;
+        }
+        
+        function criarOrbita(pontos, cor, espessura = 0.15) {
+            // Criar uma curva a partir dos pontos
+            const curve = new THREE.CatmullRomCurve3(pontos);
+            
+            // Criar tubo ao longo da curva
+            const tubeGeometry = new THREE.TubeGeometry(curve, 200, espessura, 8, false);
+            const material = new THREE.MeshStandardMaterial({
+                color: cor,
+                emissive: cor,
+                emissiveIntensity: 0.5,
+                roughness: 0.4,
+                metalness: 0.99
+            });
+            const tube = new THREE.Mesh(tubeGeometry, material);
+            scene.add(tube);
+            return tube;
+        }
+
+	// ==================== FUNÇÕES PARA EIXO MAIOR E VETORES ====================
+        
+        // Função para calcular os pontos do eixo maior (periastro e apoastro)
+        function calcularEixoMaior(a, e, Omega, w, inc) {
+            const OmegaRad = Omega * radianos;
+            const wRad = w * radianos;
+            const incRad = inc * radianos;
+            
+            // Periastro (θ = 0)
+            const rPeri = (5+a) * (1 - e);
+            const periX = rPeri * (Math.cos(OmegaRad) * Math.cos(wRad) - 
+                                   Math.sin(OmegaRad) * Math.sin(wRad) * Math.cos(incRad));
+            const periY = rPeri * (Math.sin(OmegaRad) * Math.cos(wRad) + 
+                                   Math.cos(OmegaRad) * Math.sin(wRad) * Math.cos(incRad));
+            const periZ = rPeri * (Math.sin(wRad) * Math.sin(incRad));
+            
+            // Apastro (θ = π)
+            const rApo = (5+a) * (1 + e);
+            const apoX = rApo * (Math.cos(OmegaRad) * Math.cos(Math.PI + wRad) - 
+                                 Math.sin(OmegaRad) * Math.sin(Math.PI + wRad) * Math.cos(incRad));
+            const apoY = rApo * (Math.sin(OmegaRad) * Math.cos(Math.PI + wRad) + 
+                                 Math.cos(OmegaRad) * Math.sin(Math.PI + wRad) * Math.cos(incRad));
+            const apoZ = rApo * (Math.sin(Math.PI + wRad) * Math.sin(incRad));
+            
+            return {
+                peri: new THREE.Vector3(periX, periY, periZ),
+                apo: new THREE.Vector3(apoX, apoY, apoZ)
+            };
+        }
+        
+        function criarEixoMaior(peri, apo, cor) {
+            const pontos = [peri, apo];
+            const geometry = new THREE.BufferGeometry();
+            const vertices = [];
+            pontos.forEach(p => {
+                vertices.push(p.x, p.y, p.z);
+            });
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+            
+            const material = new THREE.LineBasicMaterial({ color: cor, linewidth: 2 });
+            const linha = new THREE.Line(geometry, material);
+            scene.add(linha);
+            return linha;
+        }
+        
+        // Função para calcular o vetor momento angular (normal ao plano orbital)
+        function calcularVetorMomentoAngulo(Omega, w, inc) {
+            // O vetor momento angular é perpendicular ao plano orbital
+            // Direção dada pela inclinação e longitude do nodo
+            const OmegaRad = Omega * radianos;
+            const incRad = inc * radianos;
+            
+            // Vetor normal ao plano orbital (direção do momento angular)
+            const nx = Math.sin(incRad) * Math.sin(OmegaRad);
+            const ny = -Math.sin(incRad) * Math.cos(OmegaRad);
+            const nz = Math.cos(incRad);
+            
+            return new THREE.Vector3(nx, ny, nz).normalize();
+        }
+        
+        function criarVetorMomentoAngular(direcao, cor, escala = 10) {
+            // Criar uma seta (ArrowHelper)
+            const origem = new THREE.Vector3(0, 0, 0);
+            const dir = direcao.clone().normalize();
+            const comprimento = escala;
+            
+            const arrow = new THREE.ArrowHelper(dir, origem, comprimento, cor, 1.5, 0.8);
+            scene.add(arrow);
+            return arrow;
+        }
+		
+		// Função para calcular o vetor momento angular total (soma dos vetores individuais)
+        function calcularVetorTotal(Omega1, w1, inc1, Omega2, w2, inc2) {
+            // Calcular direções individuais
+            const dir1 = calcularVetorMomentoAngulo(Omega1, w1, inc1);
+            const dir2 = calcularVetorMomentoAngulo(Omega2, w2, inc2);
+            
+            // Converter massas para massas solares
+            const M1_solar = M1 * conv_massa;
+            const M2_solar = M2 * conv_massa;
+            
+            // Massas reduzidas
+            const mu1 = const_grav*(MC + M1_solar);
+            const mu2 = const_grav*(MC + M2_solar);
+            
+            // Momentos angulares (proporcionais a mr * a² * sqrt(1-e²))
+            const L1_magnitude = Math.sqrt(mu1 * a1 * (1 - e1 * e1));
+			const L2_magnitude = Math.sqrt(mu2 * a2 * (1 - e2 * e2));
+            
+            // Vetores individuais
+            const L1 = dir1.clone().multiplyScalar(L1_magnitude);
+            const L2 = dir2.clone().multiplyScalar(L2_magnitude);
+            
+            // Vetor total
+            const L_total = L1.clone().add(L2);
+            
+            // Escala visual baseada no maior semi-eixo
+            const escalaVisual = 5 // Math.max(a1, a2) * 0.35;
+            
+            return {
+                direcao: L_total.clone().normalize(),
+                magnitude: L_total.length(),
+                vetor: L_total,
+                escala: escalaVisual
+            };
+        }
+		
+		// Função para criar um plano perpendicular ao vetor momento angular total
+        function criarPlanoPerpendicular(direcao, tamanho = 35, cor = 0xffaa44, opacidade = 0.7) {
+            // Criar um plano que será rotacionado para ser perpendicular ao vetor
+            const geometry = new THREE.PlaneGeometry(tamanho, tamanho);
+            const material = new THREE.MeshPhongMaterial({
+                color: cor,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: opacidade,
+                emissive: cor,
+                emissiveIntensity: 0.1
+            });
+            const plano = new THREE.Mesh(geometry, material);
+            
+            // Calcular a rotação necessária para alinhar o plano com o vetor
+            // O plano padrão está em XY (normal = Z)
+            const normalPadrao = new THREE.Vector3(0, 0, 1);
+            const quaternion = new THREE.Quaternion().setFromUnitVectors(
+                normalPadrao,
+                direcao.clone().normalize()
+            );
+            plano.quaternion.copy(quaternion);
+            
+            scene.add(plano);
+            return plano;
+        }
+		
+		// ==================== FUNÇÕES PARA CÁLCULO DE ÂNGULOS ====================
+        
+        // Função para calcular o ângulo entre dois vetores (em graus)
+        function anguloEntreVetores(vetor1, vetor2) {
+            const dot = vetor1.dot(vetor2);
+            const mag1 = vetor1.length();
+            const mag2 = vetor2.length();
+            const anguloRad = Math.acos(Math.min(1, Math.max(-1, dot / (mag1 * mag2))));
+            return anguloRad / radianos;
+        }
+        
+        // Função para calcular a inclinação das órbitas em relação ao plano perpendicular ao L_total
+        function calcularInclinacaoRelativa(Omega, w, inc, direcaoTotal) {
+            // Vetor momento angular da órbita individual
+            const dirOrbita = calcularVetorMomentoAngulo(Omega, w, inc);
+            
+            // Ângulo entre o vetor da órbita e o vetor total
+            const angulo = anguloEntreVetores(dirOrbita, direcaoTotal);
+            
+            // A inclinação em relação ao plano perpendicular é 90° - ângulo
+            // Se o ângulo for 0°, a órbita está alinhada (inclinação 0 em relação ao plano)
+            // Se o ângulo for 90°, a órbita é perpendicular (inclinação 90°)
+            const inclinacaoRelativa = angulo;
+            
+            return inclinacaoRelativa;
+        }
+        
+        // Função para calcular a inclinação do plano perpendicular ao L_total em relação ao plano do céu (XY)
+        function calcularInclinacaoPlanoTotal(direcaoTotal) {
+            // Vetor normal ao plano do céu (eixo Z)
+            const normalPlanoCeu = new THREE.Vector3(0, 0, 1);
+            
+            // Ângulo entre o vetor total e o normal do plano do céu
+            const angulo = anguloEntreVetores(direcaoTotal, normalPlanoCeu);
+            
+            // A inclinação do plano perpendicular ao L_total em relação ao plano do céu
+            // é complementar ao ângulo entre os vetores normais
+            const inclinacaoPlano = 90 - angulo;
+            
+            return inclinacaoPlano;
+        }
+		
+		 // Função para criar o vetor momento angular total (com estilo destacado)
+        function criarVetorTotal(direcao, cor, escala = 8) {
+            const origem = new THREE.Vector3(0, 0, 0);
+            const dir = direcao.clone().normalize();
+            const comprimento = escala;
+            
+            // Usar ArrowHelper com tamanho maior e cor diferenciada
+            const arrow = new THREE.ArrowHelper(dir, origem, comprimento, cor, 2.0, 1.2);
+            scene.add(arrow);
+            return arrow;
+        }
+        
+        // ==================== ESTADO INICIAL ====================
+        let inc1 = 90, w1 = 0, Omega1 = 0;
+        let inc2 = 90, w2 = 0, Omega2 = 0;
+        
+        let orbit1Obj, orbit2Obj;
+        let eixoMaior1Obj, eixoMaior2Obj;
+        let vetorAngular1Obj, vetorAngular2Obj;
+		
+		let vetorTotalObj;
+        let planoTotalObj;
+        
+        function atualizarOrbitas() {
+            // Recalcular r1 e r2 com os novos parâmetros
+            const { r1: r1_atual, r2: r2_atual } = recalcularR();
+            
+            // Remover elementos antigos
+            if (orbit1Obj) scene.remove(orbit1Obj);
+            if (orbit2Obj) scene.remove(orbit2Obj);
+            if (eixoMaior1Obj) scene.remove(eixoMaior1Obj);
+            if (eixoMaior2Obj) scene.remove(eixoMaior2Obj);
+            
+            // Calcular e criar novas órbitas
+            const pontos1 = calcularPontosOrbita(r1_atual, Omega1, w1, inc1);
+            const pontos2 = calcularPontosOrbita(r2_atual, Omega2, w2, inc2);
+            
+            orbit1Obj = criarOrbita(pontos1, 0x3399ff);
+            orbit2Obj = criarOrbita(pontos2, 0xff3333);
+            
+            // Calcular e criar eixos maiores
+            const eixo1 = calcularEixoMaior(a1, e1, Omega1, w1, inc1);
+            const eixo2 = calcularEixoMaior(a2, e2, Omega2, w2, inc2);
+            
+            eixoMaior1Obj = criarEixoMaior(eixo1.peri, eixo1.apo, 0x3399ff);
+            eixoMaior2Obj = criarEixoMaior(eixo2.peri, eixo2.apo, 0xff6666);
+            
+            // Atualizar vetores de momento angular
+            atualizarVetores();
+            
+            // Calcular inclinação mútua
+            const inc1Rad = inc1 * radianos;
+            const inc2Rad = inc2 * radianos;
+            const Omega1Rad = Omega1 * radianos;
+            const Omega2Rad = Omega2 * radianos;
+            
+            const incMut = Math.acos(
+                Math.cos(inc1Rad) * Math.cos(inc2Rad) + 
+                Math.sin(inc1Rad) * Math.sin(inc2Rad) * Math.cos(Omega2Rad - Omega1Rad)
+            );
+            
+            // document.getElementById('incMutValue').textContent = `${(incMut / radianos).toFixed(2)}°`;
+			// Atualizar a janela de informações
+            document.getElementById('incMutValueInfo').textContent = `${(incMut / radianos).toFixed(2)}°`;
+        }
+
+	        function atualizarVetores() {
+            // Remover vetores antigos e seus rótulos
+            if (vetorAngular1Obj) {
+                scene.remove(vetorAngular1Obj);
+                if (vetorAngular1Obj.userData && vetorAngular1Obj.userData.label) {
+                    scene.remove(vetorAngular1Obj.userData.label);
+                }
+            }
+            if (vetorAngular2Obj) {
+                scene.remove(vetorAngular2Obj);
+                if (vetorAngular2Obj.userData && vetorAngular2Obj.userData.label) {
+                    scene.remove(vetorAngular2Obj.userData.label);
+                }
+            }
+            if (vetorTotalObj) {
+                scene.remove(vetorTotalObj);
+                if (vetorTotalObj.userData && vetorTotalObj.userData.label) {
+                    scene.remove(vetorTotalObj.userData.label);
+                }
+            }
+            if (planoTotalObj) {
+                scene.remove(planoTotalObj);
+            }
+            
+            // Verificar se os vetores individuais devem ser mostrados
+            const mostrarVetores = document.getElementById('toggleVetores')?.checked ?? false;
+            const mostrarVetorTotal = document.getElementById('toggleVetorTotal')?.checked ?? false;
+            const mostrarPlanoTotal = document.getElementById('togglePlanoTotal')?.checked ?? false;
+            
+            if (mostrarVetores) {
+                // Calcular direções dos vetores de momento angular
+                const dir1 = calcularVetorMomentoAngulo(Omega1, w1, inc1);
+                const dir2 = calcularVetorMomentoAngulo(Omega2, w2, inc2);
+                
+                // Escala baseada no semi-eixo maior (para melhor visualização)
+                const escala1 = 5;
+                const escala2 = 8;
+                
+                vetorAngular1Obj = criarVetorMomentoAngular(dir1, 0x3399ff, escala1);
+                vetorAngular2Obj = criarVetorMomentoAngular(dir2, 0xff6666, escala2);
+                
+                // Adicionar rótulos CSS2D para os vetores
+                const div1 = document.createElement('div');
+                div1.textContent = 'L₁';
+                div1.style.color = '#88aaff';
+                div1.style.fontSize = '14px';
+                div1.style.fontWeight = 'bold';
+                div1.style.background = 'rgba(0,0,0,0.6)';
+                div1.style.padding = '2px 5px';
+                div1.style.borderRadius = '3px';
+                div1.style.border = '1px solid #3399ff';
+                const label1 = new CSS2DObject(div1);
+                const pos1 = dir1.clone().multiplyScalar(escala1 * 1.1);
+                label1.position.copy(pos1);
+                scene.add(label1);
+                vetorAngular1Obj.userData = { label: label1 };
+                
+                const div2 = document.createElement('div');
+                div2.textContent = 'L₂';
+                div2.style.color = '#ffaa88';
+                div2.style.fontSize = '14px';
+                div2.style.fontWeight = 'bold';
+                div2.style.background = 'rgba(0,0,0,0.6)';
+                div2.style.padding = '2px 5px';
+                div2.style.borderRadius = '3px';
+                div2.style.border = '1px solid #ff6666';
+                const label2 = new CSS2DObject(div2);
+                const pos2 = dir2.clone().multiplyScalar(escala2 * 1.1);
+                label2.position.copy(pos2);
+                scene.add(label2);
+                vetorAngular2Obj.userData = { label: label2 };
+            }
+            
+            // Calcular vetor momento angular total (sempre necessário para os ângulos)
+            const total = calcularVetorTotal(Omega1, w1, inc1, Omega2, w2, inc2);
+            
+            // Atualizar informações angulares
+            atualizarAngulos();
+            
+            if (mostrarVetorTotal) {
+                // Criar vetor total com cor dourada e maior destaque
+                vetorTotalObj = criarVetorTotal(total.direcao, 0xffaa44, total.escala * 2.5);
+                
+                // Adicionar rótulo para o vetor total
+                const divTotal = document.createElement('div');
+                divTotal.textContent = 'L_T';
+                divTotal.style.color = '#ffaa44';
+                divTotal.style.fontSize = '16px';
+                divTotal.style.fontWeight = 'bold';
+                divTotal.style.background = 'rgba(0,0,0,0.7)';
+                divTotal.style.padding = '4px 8px';
+                divTotal.style.borderRadius = '4px';
+                divTotal.style.border = '2px solid #ffaa44';
+                divTotal.style.textShadow = '0 0 5px #ffaa44';
+                const labelTotal = new CSS2DObject(divTotal);
+                const posTotal = total.direcao.clone().multiplyScalar(total.escala * 2.55);
+                labelTotal.position.copy(posTotal);
+                scene.add(labelTotal);
+                vetorTotalObj.userData = { label: labelTotal };
+            }
+            
+            if (mostrarPlanoTotal) {
+                // Criar plano perpendicular ao vetor total
+                planoTotalObj = criarPlanoPerpendicular(total.direcao, 100, 0xffaa44, 0.75);
+            }
+        }
+        
+        // ==================== ELEMENTOS DA UI ====================
+		// Parâmetros do sistema
+        const MCSlider = document.getElementById('MCSlider');
+        const MCValue = document.getElementById('MCValue');
+        const M1Slider = document.getElementById('M1Slider');
+        const M1Value = document.getElementById('M1Value');
+        const M2Slider = document.getElementById('M2Slider');
+        const M2Value = document.getElementById('M2Value');
+        const a1Slider = document.getElementById('a1Slider');
+        const a1Value = document.getElementById('a1Value');
+        const a2Slider = document.getElementById('a2Slider');
+        const a2Value = document.getElementById('a2Value');
+        const e1Slider = document.getElementById('e1Slider');
+        const e1Value = document.getElementById('e1Value');
+        const e2Slider = document.getElementById('e2Slider');
+        const e2Value = document.getElementById('e2Value');
+		
+        // Órbita 1
+        const inc1Slider = document.getElementById('inc1Slider');
+        const inc1Value = document.getElementById('inc1Value');
+        const w1Slider = document.getElementById('w1Slider');
+        const w1Value = document.getElementById('w1Value');
+        const Omega1Slider = document.getElementById('Omega1Slider');
+        const Omega1Value = document.getElementById('Omega1Value');
+        
+        // Órbita 2
+        const inc2Slider = document.getElementById('inc2Slider');
+        const inc2Value = document.getElementById('inc2Value');
+        const w2Slider = document.getElementById('w2Slider');
+        const w2Value = document.getElementById('w2Value');
+        const Omega2Slider = document.getElementById('Omega2Slider');
+        const Omega2Value = document.getElementById('Omega2Value');
+        
+        // Checkboxes
+        const toggleEixos = document.getElementById('toggleEixos');
+        const togglePlano = document.getElementById('togglePlano');
+        const toggleVetores = document.getElementById('toggleVetores');
+        const toggleVetorTotal = document.getElementById('toggleVetorTotal');
+        const togglePlanoTotal = document.getElementById('togglePlanoTotal');
+		
+		function atualizarParametros() {
+            MC = parseFloat(MCSlider.value);
+            M1 = parseFloat(M1Slider.value);
+            M2 = parseFloat(M2Slider.value);
+            a1 = parseFloat(a1Slider.value);
+            a2 = parseFloat(a2Slider.value);
+            e1 = parseFloat(e1Slider.value);
+            e2 = parseFloat(e2Slider.value);
+            
+            MCValue.textContent = MC.toFixed(2);
+            M1Value.textContent = M1.toFixed(2);
+            M2Value.textContent = M2.toFixed(2);
+            a1Value.textContent = a1.toFixed(1);
+            a2Value.textContent = a2.toFixed(1);
+            e1Value.textContent = e1.toFixed(3);
+            e2Value.textContent = e2.toFixed(3);
+            
+            atualizarOrbitas();
+        }
+        
+         function atualizarValores() {
+            inc1 = parseFloat(inc1Slider.value);
+            inc2 = parseFloat(inc2Slider.value);
+            w1 = parseFloat(w1Slider.value);
+            w2 = parseFloat(w2Slider.value);
+            Omega1 = parseFloat(Omega1Slider.value);
+            Omega2 = parseFloat(Omega2Slider.value);
+            
+            inc1Value.textContent = `${inc1}°`;
+            inc2Value.textContent = `${inc2}°`;
+            w1Value.textContent = `${w1}°`;
+            w2Value.textContent = `${w2}°`;
+            Omega1Value.textContent = `${Omega1}°`;
+            Omega2Value.textContent = `${Omega2}°`;
+            
+            atualizarOrbitas();
+            
+            // Forçar atualização dos ângulos mesmo se os vetores não estiverem visíveis
+            atualizarAngulos();
+        }
+        
+        // Função auxiliar para atualizar apenas os ângulos
+        function atualizarAngulos() {
+            const total = calcularVetorTotal(Omega1, w1, inc1, Omega2, w2, inc2);
+            const dir1 = calcularVetorMomentoAngulo(Omega1, w1, inc1);
+            const dir2 = calcularVetorMomentoAngulo(Omega2, w2, inc2);
+            
+            const incRelativa1 = anguloEntreVetores(dir1, total.direcao);
+            const incRelativa2 = anguloEntreVetores(dir2, total.direcao);
+            const normalPlanoCeu = new THREE.Vector3(0, 0, 1);
+            const incPlanoTotal = anguloEntreVetores(total.direcao, normalPlanoCeu);
+            
+            // Atualizar elementos da janela principal (se ainda existirem)
+            const incMutElement = document.getElementById('incMutValue');
+            if (incMutElement) {
+                const inc1Rad = inc1 * radianos;
+                const inc2Rad = inc2 * radianos;
+                const Omega1Rad = Omega1 * radianos;
+                const Omega2Rad = Omega2 * radianos;
+                const incMut = Math.acos(
+                    Math.cos(inc1Rad) * Math.cos(inc2Rad) + 
+                    Math.sin(inc1Rad) * Math.sin(inc2Rad) * Math.cos(Omega2Rad - Omega1Rad)
+                );
+                incMutElement.textContent = `${(incMut / radianos).toFixed(2)}°`;
+				document.getElementById('incMutValueInfo').textContent = `${(incMut / radianos).toFixed(2)}°`;
+            }
+            
+            // Atualizar elementos da nova janela de informações
+            // document.getElementById('incMutValueInfo').textContent = document.getElementById('incMutValue')?.textContent || '0.00°';
+            
+			document.getElementById('incRelativa1Info').textContent = `${incRelativa1.toFixed(2)}°`;
+            document.getElementById('incRelativa2Info').textContent = `${incRelativa2.toFixed(2)}°`;
+            document.getElementById('incPlanoTotalInfo').textContent = `${incPlanoTotal.toFixed(2)}°`;
+            
+            // Atualizar status
+            // const statusText = document.getElementById('statusInfo');
+            // if (statusText) {
+            //     if (Math.abs(incRelativa1) < 5 && Math.abs(incRelativa2) < 5) {
+            //         statusText.textContent = '✅ Órbitas alinhadas';
+            //         statusText.style.color = '#88ff88';
+            //     } else if (incRelativa1 > 80 || incRelativa2 > 80) {
+            //         statusText.textContent = '⚠️ Órbitas perpendiculares';
+            //         statusText.style.color = '#ff8888';
+            //     } else {
+            //         statusText.textContent = '🔄 Sistema ativo';
+            //         statusText.style.color = '#ffaa44';
+            //     }
+            // }
+        }
+		
+        MCSlider.addEventListener('input', atualizarParametros);
+        M1Slider.addEventListener('input', atualizarParametros);
+        M2Slider.addEventListener('input', atualizarParametros);
+        a1Slider.addEventListener('input', atualizarParametros);
+        a2Slider.addEventListener('input', atualizarParametros);
+        e1Slider.addEventListener('input', atualizarParametros);
+        e2Slider.addEventListener('input', atualizarParametros);
+        inc1Slider.addEventListener('input', atualizarValores);
+        inc2Slider.addEventListener('input', atualizarValores);
+        w1Slider.addEventListener('input', atualizarValores);
+        w2Slider.addEventListener('input', atualizarValores);
+        Omega1Slider.addEventListener('input', atualizarValores);
+        Omega2Slider.addEventListener('input', atualizarValores);
+        
+        toggleVetores.addEventListener('change', () => {
+            atualizarVetores();
+        });
+        
+        toggleVetorTotal.addEventListener('change', () => {
+            atualizarVetores();
+        });
+        
+        togglePlanoTotal.addEventListener('change', () => {
+            atualizarVetores();
+        });
+        
+        toggleEixos.addEventListener('change', (e) => {
+            eixoX.visible = e.target.checked;
+            eixoY.visible = e.target.checked;
+            eixoZ.visible = e.target.checked;
+            xLabel.visible = e.target.checked;
+            yLabel.visible = e.target.checked;
+            zLabel.visible = e.target.checked;
+        });
+        
+        togglePlano.addEventListener('change', (e) => {
+            plano.visible = e.target.checked;
+        });
+        
+        // Inicializar
+        atualizarValores();
+        
+        // ==================== ANIMAÇÃO ====================
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // Atualiza controles de câmera
+            
+            // Rotação suave do Sol
+            sun.rotation.y += 0.005;
+            sunGlow.rotation.y += 0.003;
+            
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // ==================== AJUSTE DE TELA ====================
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        console.log('Simulador carregado! Plano do céu = XY, Z = linha de visada.');
+        
+        // Adicionar estrelas de fundo
+        const starGeometry = new THREE.BufferGeometry();
+        const starCount = 2000;
+        const starPositions = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount; i++) {
+            starPositions[i*3] = (Math.random() - 0.5) * 1000;
+            starPositions[i*3+1] = (Math.random() - 0.5) * 1000;
+            starPositions[i*3+2] = (Math.random() - 0.5) * 500 - 100;
+        }
+        starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.2 });
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+    </script>
+</body>
+</html>
