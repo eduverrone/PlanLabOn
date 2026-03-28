@@ -65,91 +65,74 @@ st.markdown("""
 st.title("🪐 Simulador de Velocidade Radial")
 # st.markdown("Ajuste os parâmetros abaixo para ver como a curva de velocidade radial muda.")
 
-# Parâmetros fixos
-MC = 1.38  # Massa da estrela em massas solares
-M1 = 1 * conv_massa  # Massa do planeta em massas solares
-a1 = 1  # Semi-eixo maior em UA
-T1 = 1  # Período em anos
-
-# Time array
-t = np.linspace(0, 3, 300)
-
 # Sidebar com controles
-st.sidebar.header("Parâmetros Orbitais")
+st.sidebar.header("Parâmetros Gerais")
 
-ecc = st.sidebar.slider(
-    "Excentricidade",
-    min_value=0.0,
-    max_value=0.99,
-    value=0.3,
-    step=0.01,
-    help="Excentricidade da órbita (0 = circular, 1 = parabólica)"
-)
+MC = st.sidebar.slider("Massa da Estrela [M_Solar]",
+                         min_value=0.1,max_value=10.0,value=1.0,step=0.1,
+                        help="Massa da estrela em massas do Sol")
 
-w_arg = st.sidebar.slider(
-    "Argumento do Periastro [deg]",
-    min_value=0,
-    max_value=360,
-    value=0,
-    step=1,
-    help="Orientação da órbita"
-)
+with st.sidebar.expander("Dados Planeta 1:"):
+    M1 = st.slider("Massa mínima do Planeta 1 [M_Jup]",
+        min_value=0.1,max_value=20.0,value=1.0,step=0.1,
+        help="Massa Mínima do planeta em massas de Júpiter") * conv_massa
 
-inc = st.sidebar.slider(
-    "Inclinação [deg]",
-    min_value=0,
-    max_value=180,
-    value=90,
-    step=1,
-    help="Inclinação do plano orbital"
-)
+    T1 = st.slider("Período Orbital 1 [anos]",
+        min_value=0.1,max_value=15.0,value=1.0,step=0.1,
+        help="Tempo para completar uma órbita")
 
-t_f = st.sidebar.slider(
-    "Tempo total [anos]",
-    min_value=1,
-    max_value=20,
-    value=3,
-    step=1,
-    help="Tempo total de simulação (em anos)"
-)
+    ecc1 = st.slider("Excentricidade 1",
+                             min_value=0.0, max_value=0.99, value=0.3, step=0.01,
+                             help="Excentricidade da órbita (0 = circular, 1 = parabólica)")
 
-# Parâmetros adicionais (opcionais - expandir)
-with st.sidebar.expander("Outros Parâmetros"):
-    MC = st.number_input(
-        "Massa da Estrela [M_Solar]",
-        min_value=0.1,
-        max_value=10.0,
-        value=1.0,
-        step=0.1,
-        help="Massa da estrela em massas do Sol"
-    )
+    w_arg1 = st.slider("Argumento do Periastro 1 [deg]",
+                               min_value=0, max_value=360, value=0, step=1,
+                               help="Orientação da órbita")
 
-    massa_planeta = st.number_input(
-        "Massa mínima do Planeta [M_Jup]",
-        min_value=0.1,
-        max_value=20.0,
-        value=1.0,
-        step=0.1,
-        help="Massa Mínima do planeta em massas de Júpiter"
-    ) * conv_massa
+    inc1 = st.slider("Inclinação 1 [deg]",
+                             min_value=0.01, max_value=180.0, value=90.0, step=1.0,
+                             help="Inclinação do plano orbital")
 
-    periodo = st.number_input(
-        "Período Orbital [anos]",
-        min_value=0.1,
-        max_value=20.0,
-        value=1.0,
-        step=0.1,
-        help="Tempo para completar uma órbita"
-    )
-    mu1 = 4.0*np.pi**2 * (MC + massa_planeta)
-    semi_eixo = ((periodo**2 * mu1) / (4 * np.pi ** 2)) ** (1 / 3)
+    M1_Real = M1 / np.sin(inc1 * radianos)
+    mu1 = 4.0 * np.pi ** 2 * (MC + M1_Real)
+    semi_eixo1 = ((T1 ** 2 * mu1) / (4 * np.pi ** 2)) ** (1 / 3)
+
+with st.sidebar.expander("Dados Planeta 2:"):
+    M2 = st.slider("Massa mínima do Planeta 2 [M_Jup]",
+                         min_value=0.0, max_value=20.0, value=0.0, step=0.1,
+                         help="Massa Mínima do planeta em massas de Júpiter") * conv_massa
+
+    T2 = st.slider("Período Orbital 2 [anos]",
+                         min_value=0.1, max_value=20.0, value=3.0, step=0.1,
+                         help="Tempo para completar uma órbita")
+
+    ecc2 = st.slider("Excentricidade 2",
+                             min_value=0.0, max_value=0.99, value=0.15, step=0.01,
+                             help="Excentricidade da órbita (0 = circular, 1 = parabólica)")
+
+    w_arg2 = st.slider("Argumento do Periastro 2 [deg]",
+                               min_value=0, max_value=360, value=0, step=1,
+                               help="Orientação da órbita")
+
+    inc2 = st.slider("Inclinação 2 [deg]",
+                             min_value=0.01, max_value=180.0, value=90.0, step=1.0,
+                             help="Inclinação do plano orbital")
+
+    M2_Real = M2 / np.sin(inc2 * radianos)
+    mu2 = 4.0 * np.pi ** 2 * (MC + M2_Real)
+    semi_eixo2 = ((T2 ** 2 * mu2) / (4 * np.pi ** 2)) ** (1 / 3)
+
+t_f = st.sidebar.slider("Tempo total [anos]",
+                        min_value=1,max_value=20,value=3,step=1,
+                        help="Tempo total de simulação (em anos)")
 
 t = np.linspace(0, t_f, t_f*100)
 # Calcular a curva de velocidade radial
-rv = velocidade_radial(massa_planeta, semi_eixo, ecc, periodo, MC, w_arg, inc, t)
+rv = (velocidade_radial(M1, semi_eixo1, ecc1, T1, MC, w_arg1, inc1, t) +
+      velocidade_radial(M2, semi_eixo2, ecc2, T2, MC, w_arg2, inc2, t))
 
 # Criar o gráfico com tamanho controlado
-fig, ax = plt.subplots(figsize=(9, 5.4))  # Ajuste conforme desejar (9:5.4 mantém proporção)
+fig, ax = plt.subplots(figsize=(10, 6))  # Ajuste conforme desejar (9:5.4 mantém proporção)
 ax.plot(t, rv, 'b-', linewidth=2)
 ax.set_xlabel('Time [yr]', fontsize=12)
 ax.set_ylabel('RV [m/s]', fontsize=12)
@@ -172,26 +155,26 @@ plt.tight_layout()
 
 # Opção 2: Se quiser centralizar e limitar o tamanho máximo
 # Descomente as linhas abaixo e comente a linha acima
-col1, col2, col3 = st.columns([1, 5, 1])
+col1, col2, col3 = st.columns([1, 50, 1])
 with col2:
     st.pyplot(fig, width='stretch')
 
 # Mostrar informações adicionais
-col1, col2, col3 = st.columns(3)
+# col1, col2 = st.columns(2)
+#
+# with col1:
+#     st.metric("Massa Mínima", f"{M1 / conv_massa:.2f} M_Jup\n P2\t{M2 / conv_massa:.2f} M_Jup")
+#
+# with col2:
+#     st.metric("Período Orbital", f"{T1:.2f} anos")
 
-with col1:
-    st.metric("Massa Mínima do Planeta", f"{massa_planeta / conv_massa:.2f} M_Jup")
-
-with col2:
-    st.metric("Período Orbital", f"{periodo:.2f} anos")
-
-with col3:
-    st.metric("Semi-eixo Maior", f"{semi_eixo:.2f} UA")
+# with col3:
+#     st.metric("Semi-eixo Maior", f"{semi_eixo1:.2f} UA")
 
 # Explicação
 with st.expander("ℹ️ Sobre este simulador"):
     st.markdown("""
-    Este simulador mostra a **curva de velocidade radial** de uma estrela causada por um planeta orbitando.
+    Este simulador mostra a **curva de velocidade radial** de uma estrela causada por um ou dois planetas.
 
     **Parâmetros:**
     - **Excentricidade**: Controla a forma da órbita (0 = circular, >0 = elíptica)
