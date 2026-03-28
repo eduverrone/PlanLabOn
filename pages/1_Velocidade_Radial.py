@@ -160,13 +160,15 @@ with col2:
     st.pyplot(fig, width='stretch')
 
 # Mostrar informações adicionais
-# col1, col2 = st.columns(2)
-#
-# with col1:
-#     st.metric("Massa Mínima", f"{M1 / conv_massa:.2f} M_Jup\n P2\t{M2 / conv_massa:.2f} M_Jup")
-#
-# with col2:
-#     st.metric("Período Orbital", f"{T1:.2f} anos")
+col1, col2 = st.columns(2)
+
+with col1:
+    st.metric("Massa Real Planeta 1:", f"{M1_Real / conv_massa:.2f} M_Jup")
+    st.metric("Massa Real Planeta 2:", f"{M2_Real / conv_massa:.2f} M_Jup")
+
+with col2:
+    st.metric("Semi-eixo Órbita 1:", f"{semi_eixo1:.2f} U.A.")
+    st.metric("Semi-eixo Órbita 2:", f"{semi_eixo2:.2f} U.A.")
 
 # with col3:
 #     st.metric("Semi-eixo Maior", f"{semi_eixo1:.2f} UA")
