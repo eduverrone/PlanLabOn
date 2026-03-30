@@ -69,28 +69,28 @@ st.title("🪐 Simulador de Velocidade Radial")
 st.sidebar.header("Parâmetros Gerais")
 
 MC = st.sidebar.slider("Massa da Estrela [M_Solar]",
-                         min_value=0.1,max_value=10.0,value=1.0,step=0.1,
+                         min_value=0.1,max_value=10.0,value=1.0,step=0.01,
                         help="Massa da estrela em massas do Sol")
 
 with st.sidebar.expander("Dados Planeta 1:"):
     M1 = st.slider("Massa mínima do Planeta 1 [M_Jup]",
-        min_value=0.1,max_value=20.0,value=1.0,step=0.1,
+        min_value=0.0, max_value=20.0, value=1.0, step=0.01,
         help="Massa Mínima do planeta em massas de Júpiter") * conv_massa
 
     T1 = st.slider("Período Orbital 1 [anos]",
-        min_value=0.1,max_value=15.0,value=1.0,step=0.1,
+        min_value=30, max_value=10000, value=365, step=1,
         help="Tempo para completar uma órbita")
 
     ecc1 = st.slider("Excentricidade 1",
-                             min_value=0.0, max_value=0.99, value=0.3, step=0.01,
+                             min_value=0.0, max_value=0.99, value=0.15, step=0.01,
                              help="Excentricidade da órbita (0 = circular, 1 = parabólica)")
 
     w_arg1 = st.slider("Argumento do Periastro 1 [deg]",
-                               min_value=0, max_value=360, value=0, step=1,
+                               min_value=0.0, max_value=360.0, value=0.0, step=0.5,
                                help="Orientação da órbita")
 
     inc1 = st.slider("Inclinação 1 [deg]",
-                             min_value=0.01, max_value=180.0, value=90.0, step=1.0,
+                             min_value=0.01, max_value=180.0, value=90.0, step=0.5,
                              help="Inclinação do plano orbital")
 
     M1_Real = M1 / np.sin(inc1 * radianos)
@@ -99,11 +99,11 @@ with st.sidebar.expander("Dados Planeta 1:"):
 
 with st.sidebar.expander("Dados Planeta 2:"):
     M2 = st.slider("Massa mínima do Planeta 2 [M_Jup]",
-                         min_value=0.0, max_value=20.0, value=0.0, step=0.1,
+                         min_value=0.0, max_value=20.0, value=0.0, step=0.01,
                          help="Massa Mínima do planeta em massas de Júpiter") * conv_massa
 
-    T2 = st.slider("Período Orbital 2 [anos]",
-                         min_value=0.1, max_value=20.0, value=3.0, step=0.1,
+    T2 = st.slider("Período Orbital 2 [dias]",
+                         min_value=30, max_value=10000, value=365, step=1,
                          help="Tempo para completar uma órbita")
 
     ecc2 = st.slider("Excentricidade 2",
@@ -111,11 +111,11 @@ with st.sidebar.expander("Dados Planeta 2:"):
                              help="Excentricidade da órbita (0 = circular, 1 = parabólica)")
 
     w_arg2 = st.slider("Argumento do Periastro 2 [deg]",
-                               min_value=0, max_value=360, value=0, step=1,
+                               min_value=0.0, max_value=360.0, value=0.0, step=0.5,
                                help="Orientação da órbita")
 
     inc2 = st.slider("Inclinação 2 [deg]",
-                             min_value=0.01, max_value=180.0, value=90.0, step=1.0,
+                             min_value=0.01, max_value=180.0, value=90.0, step=0.50,
                              help="Inclinação do plano orbital")
 
     M2_Real = M2 / np.sin(inc2 * radianos)
