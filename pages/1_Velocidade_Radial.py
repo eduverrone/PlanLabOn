@@ -79,7 +79,7 @@ with st.sidebar.expander("Dados Planeta 1:"):
 
     T1 = st.slider("Período Orbital 1 [anos]",
         min_value=30, max_value=10000, value=365, step=1,
-        help="Tempo para completar uma órbita")
+        help="Tempo para completar uma órbita")/365.0
 
     ecc1 = st.slider("Excentricidade 1",
                              min_value=0.0, max_value=0.99, value=0.15, step=0.01,
@@ -104,7 +104,7 @@ with st.sidebar.expander("Dados Planeta 2:"):
 
     T2 = st.slider("Período Orbital 2 [dias]",
                          min_value=30, max_value=10000, value=365, step=1,
-                         help="Tempo para completar uma órbita")
+                         help="Tempo para completar uma órbita")/365.0
 
     ecc2 = st.slider("Excentricidade 2",
                              min_value=0.0, max_value=0.99, value=0.15, step=0.01,
