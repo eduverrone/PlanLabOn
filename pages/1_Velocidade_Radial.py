@@ -35,12 +35,13 @@ def semi_amplitude_K(a, M_min, M_total, P, e):
     return num / den
 
 # The parametrized function to be plotted
-def velocidade_radial(m, a, e, T, M_t, w, i, t):
+def velocidade_radial(m, a, e, T, M_t, w, i, AnomM, t):
+    T0 = -AnomM * radianos*T/(2.0*np.pi)
     M_min = m * np.sin(i * radianos)
     K = semi_amplitude_K(a, M_min, M_t, T, e)
     theta = np.zeros_like(t)
     for i, time in enumerate(t):
-        f = anomalia_verdadeira(time, 0, T, e)
+        f = anomalia_verdadeira(time, T0, T, e)
         theta[i] = f
     return K * (np.cos(theta + w*radianos) + e * np.cos(w * radianos)) * conv_vel
 
@@ -93,6 +94,10 @@ with st.sidebar.expander("Dados Planeta 1:"):
                              min_value=0.01, max_value=180.0, value=90.0, step=0.5,
                              help="Inclinação do plano orbital")
 
+    AnomM1 = st.slider("Anomalia Média 1 [deg]",
+                     min_value=0.01, max_value=360.0, value=0.0, step=0.5,
+                     help="Anomalia Média inicial do planeta")
+
     M1_Real = M1 / np.sin(inc1 * radianos)
     mu1 = 4.0 * np.pi ** 2 * (MC + M1_Real)
     semi_eixo1 = ((T1 ** 2 * mu1) / (4 * np.pi ** 2)) ** (1 / 3)
@@ -118,6 +123,10 @@ with st.sidebar.expander("Dados Planeta 2:"):
                              min_value=0.01, max_value=180.0, value=90.0, step=0.50,
                              help="Inclinação do plano orbital")
 
+    AnomM2 = st.slider("Anomalia Média 2 [deg]",
+                       min_value=0.01, max_value=360.0, value=0.0, step=0.5,
+                       help="Anomalia Média inicial do planeta")
+
     M2_Real = M2 / np.sin(inc2 * radianos)
     mu2 = 4.0 * np.pi ** 2 * (MC + M2_Real)
     semi_eixo2 = ((T2 ** 2 * mu2) / (4 * np.pi ** 2)) ** (1 / 3)
@@ -128,8 +137,8 @@ t_f = st.sidebar.slider("Tempo total [anos]",
 
 t = np.linspace(0, t_f, t_f*100)
 # Calcular a curva de velocidade radial
-rv = (velocidade_radial(M1, semi_eixo1, ecc1, T1, MC, w_arg1, inc1, t) +
-      velocidade_radial(M2, semi_eixo2, ecc2, T2, MC, w_arg2, inc2, t))
+rv = (velocidade_radial(M1, semi_eixo1, ecc1, T1, MC, w_arg1, inc1, AnomM1, t) +
+      velocidade_radial(M2, semi_eixo2, ecc2, T2, MC, w_arg2, inc2, AnomM2, t))
 
 # Criar o gráfico com tamanho controlado
 fig, ax = plt.subplots(figsize=(10, 6))  # Ajuste conforme desejar (9:5.4 mantém proporção)
