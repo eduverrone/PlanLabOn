@@ -643,8 +643,8 @@
             const mu2 = const_grav*(MC + M2_solar);
             
             // Momentos angulares (proporcionais a mr * a² * sqrt(1-e²))
-            const L1_magnitude = Math.sqrt(mu1 * a1 * (1 - e1 * e1));
-			const L2_magnitude = Math.sqrt(mu2 * a2 * (1 - e2 * e2));
+            const L1_magnitude = M1_solar * Math.sqrt(mu1 * a1 * (1 - e1 * e1));
+			const L2_magnitude = M2_solar * Math.sqrt(mu2 * a2 * (1 - e2 * e2));
             
             // Vetores individuais
             const L1 = dir1.clone().multiplyScalar(L1_magnitude);
